@@ -80,24 +80,24 @@ func (r *runner) spawnGoRoutines(spawnCount int, quit chan bool) {
 				}
 				atomic.AddInt32(&r.numClients, 1)
 				go func(fn func()) {
-					for {
-						select {
-						case <-quit:
-							return
-						default:
-							if maxRPSEnabled {
-								token := atomic.AddInt64(&maxRPSThreshold, -1)
-								if token < 0 {
-									// max RPS is reached, wait until next second
-									<-maxRPSControlChannel
-								} else {
-									r.safeRun(fn)
-								}
+					//for {
+					select {
+					case <-quit:
+						return
+					default:
+						if maxRPSEnabled {
+							token := atomic.AddInt64(&maxRPSThreshold, -1)
+							if token < 0 {
+								// max RPS is reached, wait until next second
+								<-maxRPSControlChannel
 							} else {
 								r.safeRun(fn)
 							}
+						} else {
+							r.safeRun(fn)
 						}
 					}
+					//}
 				}(task.Fn)
 			}
 
